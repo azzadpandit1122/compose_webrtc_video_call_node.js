@@ -34,7 +34,8 @@ class MainActivity : ComponentActivity() {
     private var localSurfaceViewRenderer: SurfaceViewRenderer? = null
     private var remoteSurfaceViewRenderer: SurfaceViewRenderer? = null
 
-    private val myUsername = UUID.randomUUID().toString().substring(0, 2)
+//    private val myUsername = UUID.randomUUID().toString().substring(0, 2)
+    private var myUsername = UUID.randomUUID().toString().substring(0, 2)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,10 +43,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             JetpackComposeWebrtcTheme {
+
                 val requestPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestMultiplePermissions()
                 ) { permissions ->
                     if (permissions.all { it.value }) {
+                        myUsername = intent?.getStringExtra("username") ?: "1"
                         //start the process
                         mainViewModel.init(myUsername)
                     }
@@ -66,8 +69,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
-                        val incomingCallState =
-                            mainViewModel.incomingCallerSection.collectAsState(null)
+                        val incomingCallState = mainViewModel.incomingCallerSection.collectAsState(null)
                         if (incomingCallState.value != null) {
                             IncomingCallComponent(
                                 incomingCallerName = incomingCallState.value?.name,

@@ -157,6 +157,7 @@ class MainViewModel @Inject constructor(
 
     override fun onNewMessage(message: MessageModel) {
         CoroutineScope(Dispatchers.Main).launch {
+            Log.e("TAG", "onNewMessage: -- > "+message.type )
             when (message.type) {
                 "call_response" -> {
                     if (message.data == "user is not online") {

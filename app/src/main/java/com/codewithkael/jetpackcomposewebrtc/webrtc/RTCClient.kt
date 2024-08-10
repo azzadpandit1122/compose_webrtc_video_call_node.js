@@ -34,7 +34,7 @@ class RTCClient(
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
     private val iceServer = listOf(
         PeerConnection.IceServer(
-            "your turn server goes here", "user", "password"
+            "turn:numb.viagenie.ca", "webrtc@live.com", "muazkh"
         )
     )
 

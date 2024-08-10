@@ -23,9 +23,9 @@ class SocketRepository @Inject constructor() {
         // and get your ethernet ipv4 , mine is : "ws://192.168.1.3:3000"
         //but if your websocket is deployed you add your websocket address here
 
-//        webSocket = object : WebSocketClient(URI("ws://10.0.2.2:3000")) {
+        webSocket = object : WebSocketClient(URI("ws://10.0.2.2:3000")) {
 //        webSocket = object : WebSocketClient(URI("ws://192.168.1.7:3000")) {
-        webSocket = object : WebSocketClient(URI("ws://192.168.189.15:3000")) {
+//        webSocket = object : WebSocketClient(URI("ws://192.168.189.15:3000")) {
             override fun onOpen(handshakedata: ServerHandshake?) {
                 sendMessageToSocket(
                     MessageModel(
@@ -36,9 +36,11 @@ class SocketRepository @Inject constructor() {
 
             override fun onMessage(message: String?) {
                 try {
+                    Log.e(TAG, "onMessage: "+message )
                     messageInterface.onNewMessage(gson.fromJson(message, MessageModel::class.java))
 
                 } catch (e: Exception) {
+                    Log.e(TAG, "onMessage: "+e.printStackTrace() )
                     e.printStackTrace()
                 }
 
@@ -60,6 +62,7 @@ class SocketRepository @Inject constructor() {
     fun sendMessageToSocket(message: MessageModel) {
         try {
             webSocket?.send(Gson().toJson(message))
+            Log.e(TAG, "sendMessageToSocket: "+message )
         } catch (e: Exception) {
             Log.d(TAG, "sendMessageToSocket: $e")
         }

@@ -114,11 +114,11 @@ const findUser = username =>{
         return users[i]
     }
 }
-
-function getUserList() {
-    return users.map(user => ({ name: user.name }));
-}
-// Example usage:
-// To get the user list, call the getUserList function
-//const userList = getUserList();
-console.log(users);
+//
+//function getUserList() {
+//    return users.map(user => ({ name: user.name }));
+//}
+//// Example usage:
+//// To get the user list, call the getUserList function
+////const userList = getUserList();
+//console.log(users);
