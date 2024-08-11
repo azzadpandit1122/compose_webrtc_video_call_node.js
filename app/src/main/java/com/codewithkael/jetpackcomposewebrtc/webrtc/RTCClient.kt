@@ -32,11 +32,26 @@ class RTCClient(
 
     private val eglContext = EglBase.create()
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
+//    private val iceServer = listOf(
+//        PeerConnection.IceServer(
+//            "turn:numb.viagenie.ca", "webrtc@live.com", "muazkh"
+//        ),PeerConnection.IceServer(
+//            "turn:192.158.29.39:3478?transport=udp", "28224511:1379330808", "JZEOEt2V3Qb0y27GRntt2u2PAYA="
+//        ),PeerConnection.IceServer(
+//            "turn:192.158.29.39:3478?transport=tcp", "28224511:1379330808", "JZEOEt2V3Qb0y27GRntt2u2PAYA="
+//        ),PeerConnection.IceServer(
+//            "turn:13.250.13.83:3478?transport=udp", "YzYNCouZM1mhqhmseWk6", "YzYNCouZM1mhqhmseWk6"
+//        )
+//    )
+
     private val iceServer = listOf(
-        PeerConnection.IceServer(
-            "turn:numb.viagenie.ca", "webrtc@live.com", "muazkh"
+        PeerConnection.IceServer.builder("stun:iphone-stun.strato-iphone.de:3478").createIceServer(),
+        PeerConnection.IceServer("stun:openrelay.metered.ca:80"),
+        PeerConnection.IceServer("turn:openrelay.metered.ca:80","openrelayproject","openrelayproject"),
+        PeerConnection.IceServer("turn:openrelay.metered.ca:443","openrelayproject","openrelayproject"),
+        PeerConnection.IceServer("turn:openrelay.metered.ca:443?transport=tcp","openrelayproject","openrelayproject"),
+
         )
-    )
 
     private val peerConnection by lazy { createPeerConnection(observer) }
     private val localVideoSource by lazy { peerConnectionFactory.createVideoSource(false) }
@@ -94,8 +109,7 @@ class RTCClient(
         videoCapturer?.startCapture(320, 240, 30)
         localVideoTrack = peerConnectionFactory.createVideoTrack("local_track", localVideoSource)
         localVideoTrack?.addSink(surface)
-        localAudioTrack =
-            peerConnectionFactory.createAudioTrack("local_track_audio", localAudioSource)
+        localAudioTrack = peerConnectionFactory.createAudioTrack("local_track_audio", localAudioSource)
         val localStream = peerConnectionFactory.createLocalMediaStream("local_stream")
         localStream.addTrack(localAudioTrack)
         localStream.addTrack(localVideoTrack)

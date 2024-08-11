@@ -1,6 +1,7 @@
 package com.codewithkael.jetpackcomposewebrtc
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -13,16 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.view.drawToBitmap
 import com.codewithkael.jetpackcomposewebrtc.ui.components.ControlButtonsLayout
 import com.codewithkael.jetpackcomposewebrtc.ui.components.IncomingCallComponent
 import com.codewithkael.jetpackcomposewebrtc.ui.components.SurfaceViewRendererComposable
 import com.codewithkael.jetpackcomposewebrtc.ui.components.WhoToCallLayout
 import com.codewithkael.jetpackcomposewebrtc.ui.theme.JetpackComposeWebrtcTheme
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import org.webrtc.SurfaceViewRenderer
 import java.util.UUID
@@ -34,13 +40,11 @@ class MainActivity : ComponentActivity() {
     private var localSurfaceViewRenderer: SurfaceViewRenderer? = null
     private var remoteSurfaceViewRenderer: SurfaceViewRenderer? = null
 
-//    private val myUsername = UUID.randomUUID().toString().substring(0, 2)
     private var myUsername = UUID.randomUUID().toString().substring(0, 2)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             JetpackComposeWebrtcTheme {
 
@@ -70,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column {
                         val incomingCallState = mainViewModel.incomingCallerSection.collectAsState(null)
+
                         if (incomingCallState.value != null) {
                             IncomingCallComponent(
                                 incomingCallerName = incomingCallState.value?.name,
@@ -87,6 +92,7 @@ class MainActivity : ComponentActivity() {
                         SurfaceViewRendererComposable(
                             modifier = Modifier.weight(4f),
                             onSurfaceReady = { remoteSurface ->
+
                                 remoteSurfaceViewRenderer = remoteSurface
                                 mainViewModel.setRemoteView(remoteSurface)
                             }
@@ -101,6 +107,20 @@ class MainActivity : ComponentActivity() {
                         SurfaceViewRendererComposable(
                             modifier = Modifier.weight(4f),
                             onSurfaceReady = { localSurface ->
+//                                val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+//                                localSurface.post {
+//                                    val bitmap  = localSurface.drawToBitmap()
+//                                    val image = InputImage.fromBitmap(bitmap, 0)
+//                                    textRecognizer.process(image)
+//                                        .addOnSuccessListener { visionText ->
+//                                            val detectedText = visionText.text
+//                                            Log.e("TAG", "onCreate: detected text $detectedText")
+//                                        }
+//                                        .addOnFailureListener { e ->
+//                                            Log.e("TextRecognition", "Error during text recognition", e)
+//                                        }
+//                                }
+
                                 localSurfaceViewRenderer = localSurface
                                 mainViewModel.setLocalView(localSurface)
                             }

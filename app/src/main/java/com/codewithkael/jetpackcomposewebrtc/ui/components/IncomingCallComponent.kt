@@ -57,7 +57,7 @@ fun IncomingCallComponent(
             Image(
                 painter = painterResource(id = R.drawable.ic_accept),
                 contentDescription = "Accept Call",
-                modifier = Modifier
+                modifier = Modifier.padding(end = 10.dp)
                     .weight(2f)
                     .fillMaxHeight()
                     .clickable { onAcceptPressed.invoke() }
