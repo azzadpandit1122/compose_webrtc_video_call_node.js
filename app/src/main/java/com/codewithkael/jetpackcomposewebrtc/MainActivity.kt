@@ -1,9 +1,15 @@
 package com.codewithkael.jetpackcomposewebrtc
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.PixelCopy
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,12 +23,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import com.codewithkael.jetpackcomposewebrtc.ui.components.ControlButtonsLayout
 import com.codewithkael.jetpackcomposewebrtc.ui.components.IncomingCallComponent
@@ -33,6 +44,10 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.webrtc.SurfaceViewRenderer
 import java.util.UUID
 
@@ -43,7 +58,6 @@ class MainActivity : ComponentActivity() {
     private var localSurfaceViewRenderer: SurfaceViewRenderer? = null
     private var remoteSurfaceViewRenderer: SurfaceViewRenderer? = null
 
-//    private val myUsername = UUID.randomUUID().toString().substring(0, 2)
     private var myUsername = UUID.randomUUID().toString().substring(0, 2)
 
 
@@ -78,7 +92,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
-                        val incomingCallState = mainViewModel.incomingCallerSection.collectAsState(null)
+                        val incomingCallState =
+                            mainViewModel.incomingCallerSection.collectAsState(null)
                         if (incomingCallState.value != null) {
                             IncomingCallComponent(
                                 incomingCallerName = incomingCallState.value?.name,
@@ -93,6 +108,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+
                         SurfaceViewRendererComposable(
                             modifier = Modifier.weight(4f),
                             onSurfaceReady = { remoteSurface ->
@@ -100,6 +116,7 @@ class MainActivity : ComponentActivity() {
                                 mainViewModel.setRemoteView(remoteSurface)
                             }
                         )
+
 
                         Spacer(
                             modifier = Modifier
@@ -113,39 +130,113 @@ class MainActivity : ComponentActivity() {
                                 localSurfaceViewRenderer = localSurface
                                 mainViewModel.setLocalView(localSurface)
 
-                                // Move the text recognition logic inside the onSurfaceReady callback
-                               /* val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                                localSurface.post {
-                                    val bitmap = localSurface.drawToBitmap()
-                                    val image = InputImage.fromBitmap(bitmap, 0)
-                                    textRecognizer.process(image)
-                                        .addOnSuccessListener { visionText ->
-                                            val detectedText = visionText.text
-                                            Toast.makeText(this@MainActivity, "" + detectedText, Toast.LENGTH_SHORT).show()
-                                            Log.e("TAG", "onCreate: detected text $detectedText")
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.e("TextRecognition", "Error during text recognition", e)
-                                        }
-                                }*/
-
                                 val handler = Handler(Looper.getMainLooper())
                                 val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
                                 fun runTextDetection() {
-                                    localSurface.post {
-                                        val bitmap = localSurface.drawToBitmap()
-                                        val image = InputImage.fromBitmap(bitmap, 0)
-                                        textRecognizer.process(image)
-                                            .addOnSuccessListener { visionText ->
-                                                val detectedText = visionText.text
-                                                Toast.makeText(this@MainActivity, "" + detectedText, Toast.LENGTH_SHORT).show()
-                                                Log.e("TAG", "onCreate: detected text $detectedText")
+/*                                    localSurface.post {
+                                        try {
+                                            val bitmap = localSurface.drawToBitmap()
+                                            val image = InputImage.fromBitmap(bitmap, 90)
+                                            textRecognizer.process(image)
+                                                .addOnSuccessListener { visionText ->
+                                                    Log.e(
+                                                        "TAG",
+                                                        "runTextDetection: -- > " + visionText.text
+                                                    )
+                                                    for (block in visionText.textBlocks) {
+                                                        val blockText = block.text
+                                                        Log.d("TextRecognition  -- > ", blockText)
+                                                        // You can also extract specific elements like lines or words
+                                                    }
+                                                    // val detectedText = visionText.text
+                                                    //Log.e("TextRecognition", "onCreate: detected text $detectedText")
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Log.e(
+                                                        "TextRecognition",
+                                                        "Error during text recognition",
+                                                        e
+                                                    )
+                                                    Toast.makeText(
+                                                        this@MainActivity,
+                                                        "Error during text recognition: ${e.message}",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                        } catch (e: Exception) {
+                                            Log.e(
+                                                "TextRecognition",
+                                                "Error drawing bitmap or processing image",
+                                                e
+                                            )
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "Error drawing bitmap or processing image: ${e.message}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }*/
+
+
+
+                                    /*val bitmap = Bitmap.createBitmap(localSurface.width, localSurface.height, Bitmap.Config.ARGB_8888)
+                                    val location = IntArray(2)
+                                    localSurface.getLocationInWindow(location)
+
+                                    PixelCopy.request(localSurface, bitmap, { result ->
+                                        if (result == PixelCopy.SUCCESS) {
+                                            val image = InputImage.fromBitmap(bitmap, 0)
+                                            textRecognizer.process(image)
+                                                .addOnSuccessListener { visionText ->
+                                                    val detectedText = visionText.text
+//                                                    Toast.makeText(this@MainActivity, "Detected: $detectedText", Toast.LENGTH_SHORT).show()
+                                                    Log.e("TAG", "Detected text: $detectedText")
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Log.e("TextRecognition", "Error during text recognition", e)
+                                                }
+                                        } else {
+                                            Log.e("PixelCopy", "Failed to copy pixels: $result")
+                                        }
+                                    }, handler)*/
+
+
+                                    val surfaceHolder = localSurface.holder
+                                    surfaceHolder.addCallback(object : SurfaceHolder.Callback {
+                                        override fun surfaceCreated(holder: SurfaceHolder) {
+                                            // Surface has been created, but size is not known yet
+                                        }
+
+                                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                                            // Surface size has changed
+                                            if (width > 0 && height > 0) {
+                                                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                                                val location = IntArray(2)
+                                                localSurface.getLocationInWindow(location)
+
+                                                PixelCopy.request(localSurface, bitmap, { result ->
+                                                    if (result == PixelCopy.SUCCESS) {
+                                                        val image = InputImage.fromBitmap(bitmap, 0)
+                                                        textRecognizer.process(image)
+                                                            .addOnSuccessListener { visionText ->
+                                                                val detectedText = visionText.text
+                                                                Log.e("TAG", "Detected text: $detectedText")
+                                                            }
+                                                            .addOnFailureListener { e ->
+                                                                Log.e("TextRecognition", "Error during text recognition", e)
+                                                            }
+                                                    } else {
+                                                        Log.e("PixelCopy", "Failed to copy pixels: $result")
+                                                    }
+                                                }, handler)
                                             }
-                                            .addOnFailureListener { e ->
-                                                Log.e("TextRecognition", "Error during text recognition", e)
-                                            }
-                                    }
+                                        }
+
+                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                            // Surface has been destroyed
+                                        }
+                                    })
                                 }
 
                                 fun scheduleTextDetection() {
@@ -155,9 +246,9 @@ class MainActivity : ComponentActivity() {
 
                                 scheduleTextDetection()
 
-
                             }
                         )
+
                         ControlButtonsLayout(
                             modifier = Modifier.weight(1f),
                             onAudioButtonClicked = mainViewModel::onAudioButtonClicked,
@@ -170,4 +261,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }

@@ -88,8 +88,7 @@ class RTCClient(
     }
 
     fun startLocalVideo(surface: SurfaceViewRenderer) {
-        val surfaceTextureHelper =
-            SurfaceTextureHelper.create(Thread.currentThread().name, eglContext.eglBaseContext)
+        val surfaceTextureHelper = SurfaceTextureHelper.create(Thread.currentThread().name, eglContext.eglBaseContext)
         videoCapturer = getVideoCapturer(application)
         videoCapturer?.initialize(
             surfaceTextureHelper,
@@ -98,8 +97,7 @@ class RTCClient(
         videoCapturer?.startCapture(320, 240, 30)
         localVideoTrack = peerConnectionFactory.createVideoTrack("local_track", localVideoSource)
         localVideoTrack?.addSink(surface)
-        localAudioTrack =
-            peerConnectionFactory.createAudioTrack("local_track_audio", localAudioSource)
+        localAudioTrack = peerConnectionFactory.createAudioTrack("local_track_audio", localAudioSource)
         val localStream = peerConnectionFactory.createLocalMediaStream("local_stream")
         localStream.addTrack(localAudioTrack)
         localStream.addTrack(localVideoTrack)
