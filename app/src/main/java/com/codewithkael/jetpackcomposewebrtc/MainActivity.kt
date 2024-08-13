@@ -133,14 +133,15 @@ class MainActivity : ComponentActivity() {
                                 val handler = Handler(Looper.getMainLooper())
                                 val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-                                fun runTextDetection() {
-                                    val surfaceHolder = localSurface.holder
-                                    surfaceHolder.addCallback(object : SurfaceHolder.Callback {
-                                        override fun surfaceCreated(holder: SurfaceHolder) {
-                                            // Surface has been created, but size is not known yet
-                                        }
+                                val surfaceHolder = localSurface.holder
+                                surfaceHolder.addCallback(object : SurfaceHolder.Callback {
+                                    override fun surfaceCreated(holder: SurfaceHolder) {
+                                        // Surface has been created, but size is not known yet
+                                    }
 
-                                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                                    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+
+                                        fun runTextDetection() {
                                             // Surface size has changed
                                             if (width > 0 && height > 0) {
                                                 val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -165,21 +166,26 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
 
-                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
-                                            // Surface has been destroyed
+                                        fun scheduleTextDetection() {
+                                            runTextDetection()
+                                            handler.postDelayed({ scheduleTextDetection() }, 500)
                                         }
-                                    })
-                                }
 
-                                fun scheduleTextDetection() {
-                                    runTextDetection()
-                                    handler.postDelayed({ scheduleTextDetection() }, 500)
-                                }
+                                        scheduleTextDetection()
+                                    }
 
-                                scheduleTextDetection()
+                                    override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                        // Surface has been destroyed
+                                    }
+                                })
+
+
+
+
 
                             }
                         )
+
 
                         ControlButtonsLayout(
                             modifier = Modifier.weight(1f),
