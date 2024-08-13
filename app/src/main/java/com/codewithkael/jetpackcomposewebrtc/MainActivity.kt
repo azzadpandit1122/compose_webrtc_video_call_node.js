@@ -178,11 +178,6 @@ class MainActivity : ComponentActivity() {
                                         // Surface has been destroyed
                                     }
                                 })
-
-
-
-
-
                             }
                         )
 
