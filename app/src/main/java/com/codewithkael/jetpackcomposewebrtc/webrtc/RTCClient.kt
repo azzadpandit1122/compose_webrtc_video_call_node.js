@@ -32,17 +32,6 @@ class RTCClient(
 
     private val eglContext = EglBase.create()
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
-//    private val iceServer = listOf(
-//        PeerConnection.IceServer(
-//            "turn:numb.viagenie.ca", "webrtc@live.com", "muazkh"
-//        ),PeerConnection.IceServer(
-//            "turn:192.158.29.39:3478?transport=udp", "28224511:1379330808", "JZEOEt2V3Qb0y27GRntt2u2PAYA="
-//        ),PeerConnection.IceServer(
-//            "turn:192.158.29.39:3478?transport=tcp", "28224511:1379330808", "JZEOEt2V3Qb0y27GRntt2u2PAYA="
-//        ),PeerConnection.IceServer(
-//            "turn:13.250.13.83:3478?transport=udp", "YzYNCouZM1mhqhmseWk6", "YzYNCouZM1mhqhmseWk6"
-//        )
-//    )
 
     private val iceServer = listOf(
         PeerConnection.IceServer.builder("stun:iphone-stun.strato-iphone.de:3478").createIceServer(),
@@ -99,8 +88,7 @@ class RTCClient(
     }
 
     fun startLocalVideo(surface: SurfaceViewRenderer) {
-        val surfaceTextureHelper =
-            SurfaceTextureHelper.create(Thread.currentThread().name, eglContext.eglBaseContext)
+        val surfaceTextureHelper = SurfaceTextureHelper.create(Thread.currentThread().name, eglContext.eglBaseContext)
         videoCapturer = getVideoCapturer(application)
         videoCapturer?.initialize(
             surfaceTextureHelper,
